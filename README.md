@@ -28,8 +28,6 @@
 
 ## 🖼️ Preview
 
-![Preview Popup](https://user-images.githubusercontent.com/your-github-username/kak-sispema-preview.png)
-
 ---
 
 ## 📄 Referensi
