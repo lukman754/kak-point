@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "KAK SISPEMA v1.0",
+  "version": "1.0",
+  "description": "Ekstensi untuk menghitung dan menampilkan ringkasan nilai KAK di SISPEMA UNPAM dengan fitur perhitungan point otomatis dan tampilan yang informatif.",
+  "permissions": ["scripting", "activeTab"],
+  "host_permissions": ["https://sispema.unpam.ac.id/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://sispema.unpam.ac.id/*"],
+      "exclude_matches": [
+        "https://sispema.unpam.ac.id/login",
+        "https://sispema.unpam.ac.id/home"
+      ],
+      "js": ["sispema.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["sispema.js"],
+      "matches": ["https://sispema.unpam.ac.id/*"],
+      "exclude_matches": [
+        "https://sispema.unpam.ac.id/login",
+        "https://sispema.unpam.ac.id/home"
+      ]
+    }
+  ],
+  "icons": {
+    "16": "image.png",
+    "48": "image.png",
+    "128": "image.png"
+  }
+}
