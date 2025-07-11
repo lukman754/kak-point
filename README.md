@@ -19,7 +19,7 @@
 
 ## 🚀 Cara Install
 
-1. **Download** file ekstensi ini 👉 [Klik Untuk Download](https://github.com/lukman754/kak-point/releases/download/v1.0/kak-point-1.0.zip).
+1. **Download** file ekstensi ini 👉 [Klik Untuk Download](https://github.com/lukman754/kak-point/releases/download/v1.1/kak-point-1.1.zip).
 2. Extrak file yang sudah di download tadi
 3. Buka browser Chrome/Edge/Brave, masuk ke `chrome://extensions/`.
 4. Aktifkan **Developer Mode** (Mode Pengembang).
@@ -37,7 +37,7 @@
 
 ```
 document.head.appendChild(Object.assign(document.createElement('script'), {
-  src: 'https://cdn.jsdelivr.net/gh/lukman754/kak-point@v1.0/sispema.js?t=' + Date.now()
+  src: 'https://cdn.jsdelivr.net/gh/lukman754/kak-point@v1.1/sispema.js?t=' + Date.now()
 }));
 ```
 
