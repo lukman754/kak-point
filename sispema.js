@@ -1,34 +1,4 @@
-// Toggle button styles
-const toggleButtonStyle = `
-  #sispema-toggle-btn {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: #000;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 60px;
-    height: 60px;
-    font-size: 24px;
-    cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-    transition: all 0.2s ease;
-  }
-  
-  #sispema-toggle-btn:hover {
-    transform: scale(1.05);
-    background: #333;
-  }
-  
-  #sispema-toggle-btn:active {
-    transform: scale(0.95);
-  }
-`;
+// Toggle button functionality has been moved to sispema-toggle.js
 
 // =================== POPUP STYLES ===================
 const popupStyles = `
@@ -41,17 +11,29 @@ const popupStyles = `
     right: 0;
     bottom: 0;
     background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    display: flex;
+    z-index: 9998; /* Lower than popup container */
     justify-content: center;
     align-items: center;
     padding: 20px;
     overflow-y: auto;
+  }
+  
+  /* Blur effect container */
+  .popup-overlay::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     backdrop-filter: blur(8px);
+    z-index: 9997;
+    pointer-events: none; /* Allow clicks to pass through to the overlay */
   }
 
   /* Popup Container */
   .popup-container {
+    position: relative; /* Ensure it stays above the blur */
     background: white;
     border-radius: 12px;
     width: 100%;
@@ -66,6 +48,7 @@ const popupStyles = `
     max-height: 90vh;
     display: flex;
     flex-direction: column;
+    z-index: 9999; /* Higher than overlay and blur */
   }
 
   .popup-overlay.show .popup-container {
@@ -342,39 +325,13 @@ const popupStyles = `
 
 // Initialize popup
 function initPopup() {
-  // Add Font Awesome CDN if not already added
-  if (!document.querySelector('link[href*="font-awesome"]')) {
-    const fontAwesomeLink = document.createElement("link");
-    fontAwesomeLink.rel = "stylesheet";
-    fontAwesomeLink.href =
-      "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
-    document.head.appendChild(fontAwesomeLink);
-  }
-
   // Add styles if not already added
   if (!document.querySelector("style#sispema-styles")) {
     const styleElement = document.createElement("style");
     styleElement.id = "sispema-styles";
-    styleElement.textContent = toggleButtonStyle + "\n" + popupStyles;
+    styleElement.textContent = popupStyles;
     document.head.appendChild(styleElement);
   }
-
-  // Add toggle button if not exists
-  let toggleBtn = document.getElementById("sispema-toggle-btn");
-  if (!toggleBtn) {
-    toggleBtn = document.createElement("button");
-    toggleBtn.id = "sispema-toggle-btn";
-    toggleBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
-    toggleBtn.title = "Tampilkan Ringkasan Nilai";
-    document.body.appendChild(toggleBtn);
-  }
-
-  // Add toggle button event
-  toggleBtn.addEventListener("click", () => {
-    togglePopup(
-      !document.getElementById("sispema-popup")?.classList.contains("show")
-    );
-  });
 
   // Create popup HTML
   const popupHTML = `
@@ -436,19 +393,32 @@ function initPopup() {
   `;
 
   // Add popup to body
-  document.body.insertAdjacentHTML("beforeend", popupHTML);
-
-  // Add event listeners
+  document.body.insertAdjacentHTML('beforeend', popupHTML);
+  
+  // Get popup and close button
   const popup = document.getElementById("sispema-popup");
   const closeBtn = popup.querySelector(".close-btn");
+  
+  // Hide popup initially
+  popup.style.display = 'none';
 
-  closeBtn.addEventListener("click", () => {
-    togglePopup(false);
+  // Add event listeners for close button and overlay click
+  closeBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    popup.classList.remove("show");
+    setTimeout(() => {
+      popup.style.display = "none";
+      document.body.style.overflow = "";
+    }, 300);
   });
 
   popup.addEventListener("click", (e) => {
     if (e.target === popup) {
-      togglePopup(false);
+      popup.classList.remove("show");
+      setTimeout(() => {
+        popup.style.display = "none";
+        document.body.style.overflow = "";
+      }, 300);
     }
   });
 }
@@ -464,6 +434,13 @@ function togglePopup(show = true) {
       popup.classList.add("show");
       document.body.style.overflow = "hidden";
     }, 10);
+    
+    // Load data only on first open
+    if (!popup.hasAttribute('data-loaded')) {
+      jalankanSemuaData().then(() => {
+        popup.setAttribute('data-loaded', 'true');
+      });
+    }
   } else {
     popup.classList.remove("show");
     setTimeout(() => {
@@ -473,13 +450,58 @@ function togglePopup(show = true) {
   }
 }
 
-// Initialize popup when DOM is loaded
-if (typeof document !== "undefined") {
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initPopup);
-  } else {
-    initPopup();
+// Initialize toggle button
+function initToggleButton() {
+  // Add toggle button if not exists
+  let toggleBtn = document.getElementById('sispema-toggle-btn');
+  if (!toggleBtn) {
+    toggleBtn = document.createElement('button');
+    toggleBtn.id = 'sispema-toggle-btn';
+    toggleBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
+    toggleBtn.title = 'Tampilkan Ringkasan Nilai';
+    document.body.appendChild(toggleBtn);
+    
+    // Add click handler
+    toggleBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const popup = document.getElementById('sispema-popup');
+      if (!popup) return;
+      
+      const isHidden = popup.style.display === 'none' || !popup.style.display;
+      togglePopup(isHidden);
+    });
   }
+}
+
+// Make functions available globally
+window.sispema = {
+  init: function() {
+    console.log('sispema.js: Initializing...');
+    initPopup();
+    
+    // If there's a toggle button, update its state
+    const toggleBtn = document.getElementById('sispema-toggle-btn');
+    if (toggleBtn) {
+      toggleBtn.disabled = false;
+      toggleBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
+      toggleBtn.title = 'Tampilkan Ringkasan Nilai';
+    }
+    
+    // Show popup if there's a hash in the URL
+    if (window.location.hash === '#sispema') {
+      togglePopup(true);
+    }
+  },
+  run: function() {
+    return jalankanSemuaData();
+  }
+};
+
+// Initialize when the script loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', window.sispema.init);
+} else {
+  window.sispema.init();
 }
 
 // Fungsi untuk mendapatkan token dari localStorage atau cookie
@@ -1422,95 +1444,108 @@ function updatePopupContent(results) {
 
 // Fungsi utama untuk menjalankan semua data
 async function jalankanSemuaData() {
-  const BEARER_TOKEN = getAuthToken();
+  return new Promise(async (resolve, reject) => {
+    const BEARER_TOKEN = getAuthToken();
 
-  if (!BEARER_TOKEN) {
-    showError(
-      "Token autentikasi tidak ditemukan. Pastikan Anda sudah login di SISPEMA UNPAM."
-    );
-    return;
-  }
+    if (!BEARER_TOKEN) {
+      const error = "Token autentikasi tidak ditemukan. Pastikan Anda sudah login di SISPEMA UNPAM.";
+      showError(error);
+      return reject(new Error(error));
+    }
 
-  // Pastikan popup sudah diinisialisasi
-  if (!document.getElementById("sispema-popup")) {
-    initPopup();
-  }
+    try {
+      // Pastikan popup sudah diinisialisasi
+      if (!document.getElementById("sispema-popup")) {
+        initPopup();
+      }
 
-  // Tampilkan popup dengan loading state
-  const popupContent = document.getElementById("popup-content");
-  if (popupContent) {
-    popupContent.innerHTML = `
-        <div style="text-align: center; padding: 30px 20px;">
-          <div style="margin-bottom: 15px;">
-            <svg width="40" height="40" viewBox="0 0 50 50" style="animation: spin 1s linear infinite;">
-              <path d="M25,5A20,20,0,1,0,45,25,20,20,0,0,0,25,5Zm0,38A18,18,0,1,1,43,25,18,18,0,0,1,25,43Z" opacity=".3" fill="#4182eb"/>
-              <path d="M25,5A20,20,0,0,0,25,45" fill="none" stroke="#4182eb" stroke-width="6" stroke-linecap="round">
-                <animateTransform 
-                  attributeName="transform" 
-                  type="rotate" 
-                  from="0 25 25" 
-                  to="360 25 25" 
-                  dur="1s" 
-                  repeatCount="indefinite"/>
-              </path>
-            </svg>
+      // Tampilkan popup dengan loading state
+      const popupContent = document.getElementById("popup-content");
+      if (popupContent) {
+        popupContent.innerHTML = `
+          <div style="text-align: center; padding: 30px 20px;">
+            <div style="margin-bottom: 15px;">
+              <svg width="40" height="40" viewBox="0 0 50 50" style="animation: spin 1s linear infinite;">
+                <path d="M25,5A20,20,0,1,0,45,25,20,20,0,0,0,25,5Zm0,38A18,18,0,1,1,43,25,18,18,0,0,1,25,43Z" opacity=".3" fill="#4182eb"/>
+                <path d="M25,5A20,20,0,0,0,25,45" fill="none" stroke="#4182eb" stroke-width="6" stroke-linecap="round">
+                  <animateTransform 
+                    attributeName="transform" 
+                    type="rotate" 
+                    from="0 25 25" 
+                    to="360 25 25" 
+                    dur="1s" 
+                    repeatCount="indefinite"/>
+                </path>
+              </svg>
+            </div>
+            <div style="font-size: 15px; color: #4182eb; font-weight: 500;">Memuat data SISPEMA...</div>
+            <div style="font-size: 13px; color: #64748b; margin-top: 8px;">Harap tunggu sebentar</div>
           </div>
-          <div style="font-size: 15px; color: #4182eb; font-weight: 500;">Memuat data SISPEMA...</div>
-          <div style="font-size: 13px; color: #64748b; margin-top: 8px;">Harap tunggu sebentar</div>
-        </div>
-      `;
-  }
+        `;
+      }
 
-  // Tampilkan popup
-  togglePopup(true);
+      // Tampilkan popup
+      const popup = document.getElementById("sispema-popup");
+      if (popup) {
+        popup.style.display = "flex";
+        setTimeout(() => {
+          popup.classList.add("show");
+          document.body.style.overflow = "hidden";
+        }, 10);
+      }
 
-  try {
-    const [
-      prestasiResult,
-      rekognisiResult,
-      belaNegaraResult,
-      kegiatanIlmiahResult,
-    ] = await Promise.all([
-      tampilkanDaftarPrestasi(),
-      tampilkanNilaiAjuanRekognisi(),
-      tampilkanDaftarBelaNegara(),
-      tampilkanDaftarKegiatanIlmiah(),
-    ]);
+      try {
+        const [
+          prestasiResult,
+          rekognisiResult,
+          belaNegaraResult,
+          kegiatanIlmiahResult,
+        ] = await Promise.all([
+          tampilkanDaftarPrestasi(),
+          tampilkanNilaiAjuanRekognisi(),
+          tampilkanDaftarBelaNegara(),
+          tampilkanDaftarKegiatanIlmiah(),
+        ]);
 
-    // Hanya hitung total untuk data yang sudah divalidasi
-    const totalKeseluruhan =
-      (prestasiResult.totalNilai || 0) +
-      (rekognisiResult.totalNilai || 0) +
-      (belaNegaraResult.totalNilai || 0) +
-      (kegiatanIlmiahResult.totalNilai || 0);
+        // Hanya hitung total untuk data yang sudah divalidasi
+        const totalKeseluruhan =
+          (prestasiResult.totalNilai || 0) +
+          (rekognisiResult.totalNilai || 0) +
+          (belaNegaraResult.totalNilai || 0) +
+          (kegiatanIlmiahResult.totalNilai || 0);
 
-    const totalItem =
-      (prestasiResult.totalPrestasi || 0) +
-      (rekognisiResult.totalRekognisi || 0) +
-      (belaNegaraResult.totalBelaNegara || 0) +
-      (kegiatanIlmiahResult.totalKegiatanIlmiah || 0);
+        const totalItem =
+          (prestasiResult.totalPrestasi || 0) +
+          (rekognisiResult.totalRekognisi || 0) +
+          (belaNegaraResult.totalBelaNegara || 0) +
+          (kegiatanIlmiahResult.totalKegiatanIlmiah || 0);
 
-    const results = {
-      prestasi: prestasiResult,
-      rekognisi: rekognisiResult,
-      belaNegara: belaNegaraResult,
-      kegiatanIlmiah: kegiatanIlmiahResult,
-      totalKeseluruhan,
-      totalItem,
-    };
+        const results = {
+          prestasi: prestasiResult,
+          rekognisi: rekognisiResult,
+          belaNegara: belaNegaraResult,
+          kegiatanIlmiah: kegiatanIlmiahResult,
+          totalKeseluruhan,
+          totalItem,
+        };
 
-    // Update popup dengan hasil
-    updatePopupContent(results);
-
-    return results;
-  } catch (error) {
-    showError("Terjadi kesalahan saat mengambil data. Silakan coba lagi.");
-    console.error("Error dalam menjalankan script:", error);
-  }
+        // Update popup dengan hasil
+        updatePopupContent(results);
+        resolve(results);
+      } catch (error) {
+        const errorMsg = "Terjadi kesalahan saat mengambil data. Silakan coba lagi.";
+        showError(errorMsg);
+        console.error("Error dalam menjalankan script:", error);
+        reject(new Error(errorMsg));
+      }
+    } catch (error) {
+      console.error("Error in popup initialization:", error);
+      reject(error);
+    }
+  });
 }
 
-// Jalankan script
-jalankanSemuaData();
+// Don't run automatically, will be called by toggle button
 
 // Export untuk penggunaan sebagai module
 if (typeof module !== "undefined" && module.exports) {

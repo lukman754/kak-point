@@ -12,7 +12,17 @@
         "https://sispema.unpam.ac.id/login",
         "https://sispema.unpam.ac.id/home"
       ],
-      "js": ["sispema.js"]
+      "js": ["sispema.js"],
+      "run_at": "document_start"
+    },
+    {
+      "matches": ["https://sispema.unpam.ac.id/*"],
+      "exclude_matches": [
+        "https://sispema.unpam.ac.id/login",
+        "https://sispema.unpam.ac.id/home"
+      ],
+      "js": ["sispema-toggle.js"],
+      "run_at": "document_end"
     }
   ],
   "web_accessible_resources": [
