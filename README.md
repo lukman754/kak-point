@@ -37,7 +37,7 @@
 
 ```
 document.head.appendChild(Object.assign(document.createElement('script'), {
-  src: 'https://cdn.jsdelivr.net/gh/lukman754/kak-point@v1.1/sispema.js?t=' + Date.now()
+  src: 'https://cdn.jsdelivr.net/gh/lukman754/kak-point@v1.2/sispema.js?t=' + Date.now()
 }));
 ```
 
