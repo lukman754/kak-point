@@ -393,14 +393,14 @@ function initPopup() {
   `;
 
   // Add popup to body
-  document.body.insertAdjacentHTML('beforeend', popupHTML);
-  
+  document.body.insertAdjacentHTML("beforeend", popupHTML);
+
   // Get popup and close button
   const popup = document.getElementById("sispema-popup");
   const closeBtn = popup.querySelector(".close-btn");
-  
+
   // Hide popup initially
-  popup.style.display = 'none';
+  popup.style.display = "none";
 
   // Add event listeners for close button and overlay click
   closeBtn.addEventListener("click", (e) => {
@@ -434,11 +434,11 @@ function togglePopup(show = true) {
       popup.classList.add("show");
       document.body.style.overflow = "hidden";
     }, 10);
-    
+
     // Load data only on first open
-    if (!popup.hasAttribute('data-loaded')) {
+    if (!popup.hasAttribute("data-loaded")) {
       jalankanSemuaData().then(() => {
-        popup.setAttribute('data-loaded', 'true');
+        popup.setAttribute("data-loaded", "true");
       });
     }
   } else {
@@ -453,21 +453,21 @@ function togglePopup(show = true) {
 // Initialize toggle button
 function initToggleButton() {
   // Add toggle button if not exists
-  let toggleBtn = document.getElementById('sispema-toggle-btn');
+  let toggleBtn = document.getElementById("sispema-toggle-btn");
   if (!toggleBtn) {
-    toggleBtn = document.createElement('button');
-    toggleBtn.id = 'sispema-toggle-btn';
+    toggleBtn = document.createElement("button");
+    toggleBtn.id = "sispema-toggle-btn";
     toggleBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
-    toggleBtn.title = 'Tampilkan Ringkasan Nilai';
+    toggleBtn.title = "Tampilkan Ringkasan Nilai";
     document.body.appendChild(toggleBtn);
-    
+
     // Add click handler
-    toggleBtn.addEventListener('click', (e) => {
+    toggleBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      const popup = document.getElementById('sispema-popup');
+      const popup = document.getElementById("sispema-popup");
       if (!popup) return;
-      
-      const isHidden = popup.style.display === 'none' || !popup.style.display;
+
+      const isHidden = popup.style.display === "none" || !popup.style.display;
       togglePopup(isHidden);
     });
   }
@@ -475,31 +475,31 @@ function initToggleButton() {
 
 // Make functions available globally
 window.sispema = {
-  init: function() {
-    console.log('sispema.js: Initializing...');
+  init: function () {
+    console.log("sispema.js: Initializing...");
     initPopup();
-    
+
     // If there's a toggle button, update its state
-    const toggleBtn = document.getElementById('sispema-toggle-btn');
+    const toggleBtn = document.getElementById("sispema-toggle-btn");
     if (toggleBtn) {
       toggleBtn.disabled = false;
       toggleBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
-      toggleBtn.title = 'Tampilkan Ringkasan Nilai';
+      toggleBtn.title = "Tampilkan Ringkasan Nilai";
     }
-    
+
     // Show popup if there's a hash in the URL
-    if (window.location.hash === '#sispema') {
+    if (window.location.hash === "#sispema") {
       togglePopup(true);
     }
   },
-  run: function() {
+  run: function () {
     return jalankanSemuaData();
-  }
+  },
 };
 
 // Initialize when the script loads
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', window.sispema.init);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", window.sispema.init);
 } else {
   window.sispema.init();
 }
@@ -626,48 +626,48 @@ const mappingKategoriKePoint = {
   KR02: 30,
   KR03: 15,
   KR04: 15,
-  KR48: 15,
   KR05: 25,
   KR06: 20,
-  KR15: 10,
   KR07: 20,
   KR08: 15,
-  KR33: 5,
   KR09: 30,
   KR10: 30,
   KR11: 15,
   KR12: 20,
   KR13: 25,
   KR14: 25,
+  KR15: 5,
   KR16: 5,
   KR17: 10,
   KR18: 15,
   KR21: 10,
-  KR22: 10,
+  KR22: 15,
   KR23: 10,
-  KR32: 15,
   KR24: 15,
-  KR34: 15,
-  KR35: 7,
   KR25: 20,
   KR26: 15,
-  KR36: 10,
-  KR37: 5,
   KR27: 10,
-  KR38: 7,
-  KR39: 5,
-  KR28: 15,
-  KR47: 10,
-  KR46: 15,
-  KR29: 20,
+  KR28: 10,
+  KR29: 15,
   KR30: 25,
   KR31: 10,
+  KR32: 10,
+  KR33: 5,
+  KR34: 15,
+  KR35: 7,
+  KR36: 10,
+  KR37: 5,
+  KR38: 7,
+  KR39: 5,
   KR40: 7,
   KR41: 7,
   KR42: 20,
   KR43: 15,
   KR44: 10,
   KR45: 5,
+  KR46: 15,
+  KR47: 5,
+  KR48: 15,
   KR49: 25,
   KR50: 5,
   KR51: 20,
@@ -1448,7 +1448,8 @@ async function jalankanSemuaData() {
     const BEARER_TOKEN = getAuthToken();
 
     if (!BEARER_TOKEN) {
-      const error = "Token autentikasi tidak ditemukan. Pastikan Anda sudah login di SISPEMA UNPAM.";
+      const error =
+        "Token autentikasi tidak ditemukan. Pastikan Anda sudah login di SISPEMA UNPAM.";
       showError(error);
       return reject(new Error(error));
     }
@@ -1533,7 +1534,8 @@ async function jalankanSemuaData() {
         updatePopupContent(results);
         resolve(results);
       } catch (error) {
-        const errorMsg = "Terjadi kesalahan saat mengambil data. Silakan coba lagi.";
+        const errorMsg =
+          "Terjadi kesalahan saat mengambil data. Silakan coba lagi.";
         showError(errorMsg);
         console.error("Error dalam menjalankan script:", error);
         reject(new Error(errorMsg));
